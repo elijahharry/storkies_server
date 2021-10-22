@@ -3,7 +3,6 @@ import FavoritesModel from "../models/favorites.js";
 import { deleteImages } from "../middleware/fs.js";
 import { generateMini } from "../middleware/thumbnails.js";
 import generatePlaceholder from "../middleware/plaiceholder.js";
-import datauri from "datauri";
 
 export const getFavorites = async (req, res) => {
   try {

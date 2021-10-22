@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import BrandModel from "../models/brand.js";
 import { deleteImages } from "../middleware/fs.js";
 import { generateMini } from "../middleware/thumbnails.js";
-import datauri from "datauri";
+import generatePlaceholder from "../middleware/plaiceholder.js";
 
 export const getBrands = async (req, res) => {
   try {
@@ -14,8 +14,8 @@ export const getBrands = async (req, res) => {
 };
 
 export const addBrand = async (req, res) => {
-  const thumbnail = await generateMini("brands", 750, req.file.filename);
-  const imgUri = await datauri(`img/mini/${req.file.filename}`);
+  await generateMini("brands", 750, req.file.filename);
+  const blur = await generatePlaceholder("brands", req.file.filename);
   const newBrand = new BrandModel({
     title: req.body.title,
     slug: req.body.slug,
@@ -25,12 +25,12 @@ export const addBrand = async (req, res) => {
       original: req.file.originalname,
       filename: req.file.filename,
       folder: req.file.destination,
-      blur: imgUri,
+      blur: blur,
     },
   });
   try {
     await newBrand.save();
-    deleteImages("mini", [req.file]);
+    deleteImages("raw", [req.file]);
     res.status(201).json({ message: "Brand successfully added." });
   } catch (error) {
     console.log(error.message);

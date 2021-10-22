@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import ProductModel from "../models/product.js";
 import { deleteImages } from "../middleware/fs.js";
 import { generateMini } from "../middleware/thumbnails.js";
-import datauri from "datauri";
+import generatePlaceholder from "../middleware/plaiceholder.js";
 
 export const getProducts = async (req, res) => {
   try {
@@ -18,27 +18,20 @@ export const addProduct = async (req, res) => {
   let images = [];
   req.files.map((img) => {
     images.push(
-      new Promise((resolve, reject) => {
-        generateMini("products", 1500, img.filename)
-          .then(() => {
-            datauri(`img/mini/${img.filename}`)
-              .then((blur) =>
-                resolve({
-                  original: img.originalname,
-                  filename: img.filename,
-                  folder: "img/products",
-                  blur: blur,
-                })
-              )
-              .catch((e) => {
-                console.log(e);
-                reject();
-              });
-          })
-          .catch((e) => {
-            console.log(e);
-            reject();
+      new Promise(async (resolve, reject) => {
+        try {
+          await generateMini("products", 1500, img.filename);
+          const blur = await generatePlaceholder("products", img.filename);
+          resolve({
+            original: img.originalname,
+            filename: img.filename,
+            folder: "img/products",
+            blur: blur,
           });
+        } catch (e) {
+          console.log(e);
+          reject();
+        }
       })
     );
   });
@@ -58,7 +51,6 @@ export const addProduct = async (req, res) => {
       newProduct
         .save()
         .then(() => {
-          deleteImages("mini", i);
           deleteImages("raw", i);
           res.status(201).json({ message: "Saved successfully." });
         })
