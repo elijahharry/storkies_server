@@ -14,6 +14,7 @@ export const getFavorites = async (req, res) => {
 };
 
 export const addFavorites = async (req, res) => {
+  console.log("Request recieved");
   const old = JSON.parse(req.body.old);
   let images = [];
   if (!mongoose.Types.ObjectId.isValid(old._id)) {
