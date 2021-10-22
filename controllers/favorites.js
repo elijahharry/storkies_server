@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import FavoritesModel from "../models/favorites.js";
 import { deleteImages } from "../middleware/fs.js";
 import { generateMini } from "../middleware/thumbnails.js";
+import generatePlaceholder from "../middleware/plaiceholder.js";
 import datauri from "datauri";
 
 export const getFavorites = async (req, res) => {
@@ -22,27 +23,20 @@ export const addFavorites = async (req, res) => {
   } else {
     req.files.map((img) => {
       images.push(
-        new Promise((resolve, reject) => {
-          generateMini("fav", 1800, img.filename)
-            .then(() => {
-              datauri(`img/mini/${img.filename}`)
-                .then((blur) =>
-                  resolve({
-                    original: img.originalname,
-                    filename: img.filename,
-                    folder: "img/fav",
-                    blur: blur,
-                  })
-                )
-                .catch((e) => {
-                  console.log(e);
-                  reject();
-                });
-            })
-            .catch((e) => {
-              console.log(e + " here");
-              reject();
+        new Promise(async (resolve, reject) => {
+          try {
+            await generateMini("fav", 1800, img.filename);
+            const blur = await generatePlaceholder("fav", img.filename);
+            resolve({
+              original: img.originalname,
+              filename: img.filename,
+              folder: "img/fav",
+              blur: blur,
             });
+          } catch (e) {
+            console.log(e);
+            reject();
+          }
         })
       );
     });
