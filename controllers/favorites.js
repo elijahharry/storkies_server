@@ -50,7 +50,6 @@ export const addFavorites = async (req, res) => {
           .save()
           .then(async () => {
             await FavoritesModel.findByIdAndRemove(old._id);
-            deleteImages("mini", i);
             deleteImages("raw", i);
             deleteImages("fav", old.images);
             res
